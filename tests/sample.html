@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeltaMove — Easing Test</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #0d1117;
+      padding: 32px 48px 0;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+    }
+
+    h1 span {
+      color: #58a6ff;
+    }
+
+    .subtitle {
+      color: #8b949e;
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 28px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 16px 24px;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .control-group label {
+      font-size: 13px;
+      color: #8b949e;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .control-group input {
+      width: 90px;
+      padding: 8px 12px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #e6edf3;
+      font-size: 14px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .control-group input:focus {
+      border-color: #58a6ff;
+    }
+
+    .control-group .unit {
+      font-size: 12px;
+      color: #484f58;
+      font-weight: 500;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    button {
+      padding: 8px 20px;
+      border-radius: 6px;
+      border: 1px solid #30363d;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .btn-cancel {
+      background: transparent;
+      color: #f85149;
+      border-color: #f8514933;
+    }
+
+    .btn-cancel:hover {
+      background: #f8514915;
+      border-color: #f85149;
+    }
+
+    .btn-play {
+      background: #238636;
+      color: #fff;
+      border-color: #238636;
+    }
+
+    .btn-play:hover {
+      background: #2ea043;
+    }
+
+    /* Cards grid */
+    .cards-wrapper {
+      padding: 0 48px 32px;
+    }
+
+    .family-section {
+      margin-bottom: 24px;
+    }
+
+    .family-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #484f58;
+      margin-bottom: 10px;
+      padding-left: 4px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 14px 16px;
+      transition: border-color 0.15s;
+    }
+
+    .card:hover {
+      border-color: #484f58;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .effect-name {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      color: #79c0ff;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .effect-name:hover {
+      color: #a5d6ff;
+      text-decoration: underline;
+    }
+
+    .effect-value {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 11px;
+      color: #484f58;
+      min-width: 38px;
+      text-align: right;
+    }
+
+    /* Progress bar */
+    .bar-container {
+      width: 100%;
+      height: 20px;
+      background: #21262d;
+      border-radius: 5px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 5px;
+      background: linear-gradient(90deg, #f85149, #d29922, #3fb950);
+      transition: none;
+      position: relative;
+    }
+
+    .bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, transparent 60%);
+      border-radius: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <h1><span>Delta Move</span> — Easing Test</h1>
+    <p class="subtitle">Visual test for all easing effects with configurable duration and FPS</p>
+
+    <div class="controls">
+      <div class="control-group">
+        <label for="duration">Duration</label>
+        <input type="number" id="duration" value="1500" min="0" step="100">
+        <span class="unit">ms</span>
+      </div>
+      <div class="control-group">
+        <label for="fps">FPS</label>
+        <input type="number" id="fps" value="" min="1" max="240" placeholder="auto">
+      </div>
+      <div class="spacer"></div>
+      <button class="btn-cancel" onclick="cancelAll()">Interromper</button>
+      <button class="btn-play" onclick="playAll()">&#9654; Atualizar</button>
+    </div>
+  </div>
+
+  <div class="cards-wrapper" id="cards-wrapper"></div>
+
+  <script src="../dist/delta-move.min.js"></script>
+
+  <script>
+    // ─── Cards Grid ──────────────────────────────────────────────────
+
+    const FAMILIES = [
+      { name: 'Linear', effects: ['linear'] },
+      { name: 'Sine', effects: ['ease-in', 'ease-out', 'ease-in-out'] },
+      { name: 'Quad', effects: ['ease-in-quad', 'ease-out-quad', 'ease-in-out-quad'] },
+      { name: 'Cubic', effects: ['ease-in-cubic', 'ease-out-cubic', 'ease-in-out-cubic'] },
+      { name: 'Quart', effects: ['ease-in-quart', 'ease-out-quart', 'ease-in-out-quart'] },
+      { name: 'Expo', effects: ['ease-in-expo', 'ease-out-expo', 'ease-in-out-expo'] },
+      { name: 'Circ', effects: ['ease-in-circ', 'ease-out-circ', 'ease-in-out-circ'] },
+      { name: 'Back', effects: ['ease-in-back', 'ease-out-back', 'ease-in-out-back'] },
+      { name: 'Elastic', effects: ['ease-in-elastic', 'ease-out-elastic', 'ease-in-out-elastic'] },
+      { name: 'Bounce', effects: ['ease-in-bounce', 'ease-out-bounce', 'ease-in-out-bounce'] },
+    ];
+
+    const wrapper = document.getElementById('cards-wrapper');
+    const bars = {};
+    const values = {};
+
+    FAMILIES.forEach((family) => {
+      const section = document.createElement('div');
+      section.className = 'family-section';
+      section.innerHTML = `<div class="family-label">${family.name}</div>`;
+
+      const grid = document.createElement('div');
+      grid.className = 'cards-grid';
+
+      family.effects.forEach((effect) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-header">
+            <span class="effect-name" onclick="playSingle('${effect}')">${effect}</span>
+            <span class="effect-value">0%</span>
+          </div>
+          <div class="bar-container">
+            <div class="bar-fill"></div>
+          </div>`;
+        grid.appendChild(card);
+        bars[effect] = card.querySelector('.bar-fill');
+        values[effect] = card.querySelector('.effect-value');
+      });
+
+      section.appendChild(grid);
+      wrapper.appendChild(section);
+    });
+
+    // ─── Actions ────────────────────────────────────────────────────────
+
+    function getConfig() {
+      const duration = parseInt(document.getElementById('duration').value) || 1500;
+      const fpsVal = document.getElementById('fps').value;
+      const fps = fpsVal ? parseInt(fpsVal) : undefined;
+      return { duration, fps };
+    }
+
+    function playAll() {
+      const { duration, fps } = getConfig();
+
+      Object.entries(bars).forEach(([effect, bar]) => {
+        bar.style.width = '0%';
+        values[effect].textContent = '0%';
+        DeltaMove.animate((value) => {
+          const v = Math.max(0, value);
+          bar.style.width = v + '%';
+          values[effect].textContent = Math.round(v) + '%';
+        }, {
+          id: effect,
+          effect,
+          duration,
+          fps,
+          range: [0, 100],
+        }).catch((e) => {
+          console.warn(`Animation ${effect} was interrupted:`, e);
+        });
+      });
+    }
+
+    function playSingle(effect) {
+      const { duration, fps } = getConfig();
+      const bar = bars[effect];
+      bar.style.width = '0%';
+      values[effect].textContent = '0%';
+      DeltaMove.animate((value) => {
+        const v = Math.max(0, value);
+        bar.style.width = v + '%';
+        values[effect].textContent = Math.round(v) + '%';
+      }, { id: effect, effect, duration, fps, range: [0, 100] }).catch((e) => {
+        console.warn(`Animation ${effect} was interrupted:`, e);
+      });
+    }
+
+    function cancelAll() {
+      DeltaMove.cancelAll();
+    }
+
+    // Auto-play on load
+    playAll();
+  </script>
+
+</body>
+
+</html>
